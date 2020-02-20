@@ -104,7 +104,7 @@ methods 함수에 return 값을 설정해주면 computed내 함수와 사실상 
     - methods 함수의 경우 매개변수를 받을 수가 있습니다.
 - 캐싱되는지 안되는지
     - methods 함수는 렌더링 할 때마다 호출됩니다. 그래서 위 예시 코드에서도 secondCount라는 triple 메소드와 의존성이 없는 변수가 값이 변해도 렌더링은 다시 되기 때문에 methods 함수는 호출됩니다. 그래서 비효율적. 이러한 이유로 아마도 computed라는 옵션이 따로 존재하지 않나 추측해봅니다.
-    - computed 함수는 내부적으로 외존성이 있는 데이터가 변했을 때에만 호출됩니다.
+    - computed 함수는 내부적으로 의존성이 있는 데이터가 변했을 때에만 호출됩니다.
 
 
 ## 4. 조건부로 마크업 렌더링
@@ -144,6 +144,49 @@ v-show와는 다르게 false일 때 무조건 해당 요소를 숨기는 것이 
 - 처음 듣는 얘기이고 책에서 안내하는 위키피디아의 영문 자료는 이해하기가 어려워서 아래의 한글 자료로 겨우 이해하였습니다.
 - [http://milooy.github.io/TIL/JavaScript/call-by-sharing.html#결론](http://milooy.github.io/TIL/JavaScript/call-by-sharing.html#%EA%B2%B0%EB%A1%A0)
 - Key Point : **함수에 객체 형태의 인자를 넘기면 속성은 공유하지만 새로 객체를 할당할 수는 없습니다.**
+
+<u>**스터디 후 추가 내용**</u>
+```
+var obj1 = {
+item: {level: 1}
+},
+obj2 = {
+item: {level: 1}
+},
+obj3 = {
+item: {level: 1}
+};
+
+function change(obj1, obj2, obj3) {
+    obj1.item.level = 2;
+    obj2.item = { level: 2 }
+    obj3 = {
+        item: {level: 2}
+    };
+}
+
+change(obj1, obj2, obj3);
+
+console.log(obj1.item.level);
+console.log(obj2.item.level);
+console.log(obj3.item.level);
+```
+앞서 첨부한 블로그에 있는 코드에서 객체의 속성은 원시값이었지만, 객체 내부의 속성 또한 객체를 참조한다면 어떻게 될지 궁금해서 블로그에 있는 코드를 조금 변경해서 테스트해보았습니다. change함수를 위와 같이 호출한 후에 obj2, obj3, obj3가 무엇을 가리키고 있는지 확인해보았습니다.
+
+**콘솔 로그 결과**
+```
+2 
+2
+1
+```
+
+- obj1의 경우에는 당연히 change 함수에의 해 obj1.item.level의 값이 2로 바뀝니다.
+- obj3의 경우에는 아예 새로운 객체를 할당하려는 것이므로 ob3은 바뀌지 않습니다. 그래서 obj3.item.leve의 값은 바뀌지 않습니다.
+- obj2의 케이스가 관건인데요. 제 추측으로는 안 바뀌지 않을까 싶었는데, ob2.item.level도 2로 바뀌었습니다. 
+
+**이를 통해 알 수 있었던 것은 함수에 객체 형태의 인자를 넘기면 객체의 속성은 원시값이 아닌 객체 형태(reference-type)일지라도 새롭게 할당할 수 있다는 것입니다.** 
+  
+결국 앞서 정리했던 Key Point가 핵심입니다. 그런데 'call by sharing'이라는 용어를 처음 들어봐서 그런지 sharing이라는 표현이 이러한 특성을 적절하게 표현하는 것인지 조금 애매한 것 같다는 생각도 듭니다. 
 
 ---
 ## 참고 자료
